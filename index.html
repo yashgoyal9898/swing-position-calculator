@@ -34,9 +34,14 @@
         <input type="number" id="second-buy-price"><br>
 
         <label for="result-qty">Now Buy / Current Buying Qty:</label>
-        <input type="number" id="result-qty" readonly><br>
+        <input type="number" id="result-qty" ><br>
 
         <button onclick="calculateQty()">Calculate Qty</button>
+
+        <br>
+
+        <label for="result-qty">New Avg Price</label>
+        <input type="number" value="" name="" id="new-buy-avg">
     </div>
 
     <script>
@@ -47,6 +52,8 @@
             let firstBuyPrice = parseFloat(document.getElementById('first-buy-price').value);
             let secondSL = parseFloat(document.getElementById('second-sl').value);
             let secondBuyPrice = parseFloat(document.getElementById('second-buy-price').value);
+            
+          
             
             // Calculate initial risk per share
             let initialRiskPerShare = firstBuyPrice - secondSL;
@@ -62,7 +69,16 @@
             let secondQty = remainingRisk / secondRiskPerShare;
             
             // Display result
-            document.getElementById('result-qty').value = secondQty.toFixed(2);
+            document.getElementById('result-qty').value = Math.floor(secondQty);
+
+            // Calculate new average buy price
+            let firstTotalCost = firstQty * firstBuyPrice;
+            let totalNewCost = Math.floor(secondQty) * secondBuyPrice;
+            let newTotalQty = firstQty + Math.floor(secondQty);
+    
+            let newBuyAvg = (firstTotalCost + totalNewCost) / newTotalQty ;
+
+            document.getElementById('new-buy-avg').value = newBuyAvg;
         }
     </script>
 </body>
