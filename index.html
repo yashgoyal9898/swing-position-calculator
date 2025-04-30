@@ -1,85 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        .main-cont {
-            max-width: 600px;
-            margin: auto;
-            padding-top: 60px;
-        }
-        .main-cont label, .main-cont input {
-            padding: 8px;
-            margin: 8px;
-        }
-    </style>
-    <title>Calculate Quantity</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stock Calculators</title>
+  <style>
+    .main-cont {
+      max-width: 600px;
+      margin: auto;
+      padding-top: 30px;
+    }
+    .tab-buttons {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .tab-buttons button {
+      padding: 10px 20px;
+      margin: 0 5px;
+      cursor: pointer;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    label, input {
+      display: block;
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
-    <div class="main-cont">
-        <label for="risk-amount">Risk amount:</label>
-        <input type="number" id="risk-amount"><br>
-
-        <label for="first-qty">Total Qty:</label>
-        <input type="number" id="first-qty"><br>
-
-        <label for="first-buy-price">Avg Price:</label>
-        <input type="number" id="first-buy-price"><br>
-
-        <label for="second-sl">Current SL / Adjusted SL:</label>
-        <input type="number" id="second-sl"><br>
-
-        <label for="second-buy-price">Current Buying Price:</label>
-        <input type="number" id="second-buy-price"><br>
-
-        <label for="result-qty">Now Buy / Current Buying Qty:</label>
-        <input type="number" id="result-qty" ><br>
-
-        <button onclick="calculateQty()">Calculate Qty</button>
-
-        <br>
-
-        <label for="result-qty">New Avg Price</label>
-        <input type="number" value="" name="" id="new-buy-avg">
+  <div class="main-cont">
+    <div class="tab-buttons">
+      <button onclick="openTab('tab1')">Position Size Calculator</button>
+      <button onclick="openTab('tab2')">Avg Price Target Calculator</button>
     </div>
 
-    <script>
-        function calculateQty() {
-            // Get input values
-            let riskAmount = parseFloat(document.getElementById('risk-amount').value);
-            let firstQty = parseFloat(document.getElementById('first-qty').value);
-            let firstBuyPrice = parseFloat(document.getElementById('first-buy-price').value);
-            let secondSL = parseFloat(document.getElementById('second-sl').value);
-            let secondBuyPrice = parseFloat(document.getElementById('second-buy-price').value);
-            
-          
-            
-            // Calculate initial risk per share
-            let initialRiskPerShare = firstBuyPrice - secondSL;
-            
-            // Calculate initial risk taken
-            let initialRiskTaken = firstQty * initialRiskPerShare;
-            
-            // Remaining risk capacity
-            let remainingRisk = riskAmount - initialRiskTaken;
-            
-            // Calculate the quantity to buy at second entry price
-            let secondRiskPerShare = secondBuyPrice - secondSL;
-            let secondQty = remainingRisk / secondRiskPerShare;
-            
-            // Display result
-            document.getElementById('result-qty').value = Math.floor(secondQty);
+    <!-- Tab 1: Position Size Calculator -->
+    <div id="tab1" class="tab-content active">
+      <label for="risk-amount">Risk amount:</label>
+      <input type="number" id="risk-amount">
 
-            // Calculate new average buy price
-            let firstTotalCost = firstQty * firstBuyPrice;
-            let totalNewCost = Math.floor(secondQty) * secondBuyPrice;
-            let newTotalQty = firstQty + Math.floor(secondQty);
-    
-            let newBuyAvg = (firstTotalCost + totalNewCost) / newTotalQty ;
+      <label for="first-qty">Total Qty:</label>
+      <input type="number" id="first-qty">
 
-            document.getElementById('new-buy-avg').value = newBuyAvg;
-        }
-    </script>
+      <label for="first-buy-price">Avg Price:</label>
+      <input type="number" id="first-buy-price">
+
+      <label for="second-sl">Current SL / Adjusted SL:</label>
+      <input type="number" id="second-sl">
+
+      <label for="second-buy-price">Current Buying Price:</label>
+      <input type="number" id="second-buy-price">
+
+      <label for="result-qty">Now Buy / Current Buying Qty:</label>
+      <input type="number" id="result-qty">
+
+      <button onclick="calculateQty()">Calculate Qty</button>
+
+      <label for="new-buy-avg">New Avg Price:</label>
+      <input type="number" id="new-buy-avg">
+    </div>
+
+    <!-- Tab 2: Avg Price Target Calculator -->
+    <div id="tab2" class="tab-content">
+      <label>Current Qty:</label>
+      <input type="number" id="avg-currentQty" value="10">
+
+      <label>Current Avg Price:</label>
+      <input type="number" id="avgPrice" value="40">
+
+      <label>Current Market Price:</label>
+      <input type="number" id="marketPrice" value="45">
+
+      <label>Target Avg Price:</label>
+      <input type="number" id="targetAvg" value="43"><br>
+
+      <button onclick="calculateAvgTarget()">Calculate Additional Qty</button>
+
+      <h3 id="avg-result"></h3>
+    </div>
+  </div>
+
+  <script>
+    function openTab(tabId) {
+      const contents = document.querySelectorAll(".tab-content");
+      contents.forEach(tab => tab.classList.remove("active"));
+      document.getElementById(tabId).classList.add("active");
+    }
+
+    function calculateQty() {
+      let riskAmount = parseFloat(document.getElementById('risk-amount').value);
+      let firstQty = parseFloat(document.getElementById('first-qty').value);
+      let firstBuyPrice = parseFloat(document.getElementById('first-buy-price').value);
+      let secondSL = parseFloat(document.getElementById('second-sl').value);
+      let secondBuyPrice = parseFloat(document.getElementById('second-buy-price').value);
+
+      let initialRiskPerShare = firstBuyPrice - secondSL;
+      let initialRiskTaken = firstQty * initialRiskPerShare;
+      let remainingRisk = riskAmount - initialRiskTaken;
+
+      let secondRiskPerShare = secondBuyPrice - secondSL;
+      let secondQty = remainingRisk / secondRiskPerShare;
+
+      document.getElementById('result-qty').value = Math.floor(secondQty);
+
+      let firstTotalCost = firstQty * firstBuyPrice;
+      let totalNewCost = Math.floor(secondQty) * secondBuyPrice;
+      let newTotalQty = firstQty + Math.floor(secondQty);
+
+      let newBuyAvg = (firstTotalCost + totalNewCost) / newTotalQty;
+      document.getElementById('new-buy-avg').value = newBuyAvg.toFixed(2);
+    }
+
+    function calculateAvgTarget() {
+      const currentQty = parseFloat(document.getElementById("avg-currentQty").value);
+      const avgPrice = parseFloat(document.getElementById("avgPrice").value);
+      const marketPrice = parseFloat(document.getElementById("marketPrice").value);
+      const targetAvg = parseFloat(document.getElementById("targetAvg").value);
+
+      const totalInvested = currentQty * avgPrice;
+      const x = (targetAvg * currentQty - totalInvested) / (marketPrice - targetAvg);
+
+      if (x <= 0 || isNaN(x)) {
+        document.getElementById("avg-result").innerText = "Target average already achieved or not possible with current market price.";
+      } else {
+        document.getElementById("avg-result").innerText =
+          `Buy approximately ${x.toFixed(2)} shares at ₹${marketPrice} to make average price ₹${targetAvg}.`;
+      }
+    }
+  </script>
 </body>
 </html>
