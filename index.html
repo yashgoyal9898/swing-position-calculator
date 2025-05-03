@@ -116,21 +116,24 @@
     }
 
     function calculateAvgTarget() {
-      const currentQty = parseFloat(document.getElementById("avg-currentQty").value);
-      const avgPrice = parseFloat(document.getElementById("avgPrice").value);
-      const marketPrice = parseFloat(document.getElementById("marketPrice").value);
-      const targetAvg = parseFloat(document.getElementById("targetAvg").value);
+  const currentQty = parseFloat(document.getElementById("avg-currentQty").value);
+  const avgSellPrice = parseFloat(document.getElementById("avgPrice").value);
+  const marketPrice = parseFloat(document.getElementById("marketPrice").value);
+  const targetAvg = parseFloat(document.getElementById("targetAvg").value);
 
-      const totalInvested = currentQty * avgPrice;
-      const x = (targetAvg * currentQty - totalInvested) / (marketPrice - targetAvg);
+  const numerator = (targetAvg * currentQty - avgSellPrice * currentQty);
+  const denominator = (marketPrice - targetAvg);
+  const x = numerator / denominator;
 
-      if (x <= 0 || isNaN(x)) {
-        document.getElementById("avg-result").innerText = "Target average already achieved or not possible with current market price.";
-      } else {
-        document.getElementById("avg-result").innerText =
-          `Buy approximately ${x.toFixed(2)} shares at ₹${marketPrice} to make average price ₹${targetAvg}.`;
-      }
-    }
+  if (x <= 0 || isNaN(x)) {
+    document.getElementById("avg-result").innerText =
+      "Target average not achievable with current market price.";
+  } else {
+    document.getElementById("avg-result").innerText =
+      `Buy approximately ${x.toFixed(2)} quantity at ₹${marketPrice} to bring average sell price to ₹${targetAvg}.`;
+  }
+}
+
   </script>
 </body>
 </html>
