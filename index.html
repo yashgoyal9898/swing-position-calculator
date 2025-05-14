@@ -5,10 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Stock Calculators</title>
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
     .main-cont {
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
       padding-top: 30px;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .tab-buttons {
       text-align: center;
@@ -18,6 +27,14 @@
       padding: 10px 20px;
       margin: 0 5px;
       cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #2563eb;
+      color: white;
+      font-weight: bold;
+    }
+    .tab-buttons button:hover {
+      background-color: #1d4ed8;
     }
     .tab-content {
       display: none;
@@ -28,6 +45,32 @@
     label, input {
       display: block;
       margin: 10px 0;
+      width: 100%;
+    }
+    input {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button.calc-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #16a34a;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 15px;
+    }
+    button.calc-btn:hover {
+      background-color: #15803d;
+    }
+    .result {
+      background-color: #f1f5f9;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 6px;
     }
   </style>
 </head>
@@ -36,35 +79,36 @@
     <div class="tab-buttons">
       <button onclick="openTab('tab1')">Position Size Calculator</button>
       <button onclick="openTab('tab2')">Avg Price Target Calculator</button>
+      <button onclick="openTab('tab3')">Leverage Calculator</button>
     </div>
 
-    <!-- Tab 1: Position Size Calculator -->
+    <!-- Tab 1 -->
     <div id="tab1" class="tab-content active">
-      <label for="risk-amount">Risk amount:</label>
+      <label>Risk amount:</label>
       <input type="number" id="risk-amount">
 
-      <label for="first-qty">Total Qty:</label>
+      <label>Total Qty:</label>
       <input type="number" id="first-qty">
 
-      <label for="first-buy-price">Avg Price:</label>
+      <label>Avg Price:</label>
       <input type="number" id="first-buy-price">
 
-      <label for="second-sl">Current SL / Adjusted SL:</label>
+      <label>Current SL / Adjusted SL:</label>
       <input type="number" id="second-sl">
 
-      <label for="second-buy-price">Current Buying Price:</label>
+      <label>Current Buying Price:</label>
       <input type="number" id="second-buy-price">
 
-      <label for="result-qty">Now Buy / Current Buying Qty:</label>
+      <label>Now Buy / Current Buying Qty:</label>
       <input type="number" id="result-qty">
 
-      <button onclick="calculateQty()">Calculate Qty</button>
+      <button class="calc-btn" onclick="calculateQty()">Calculate Qty</button>
 
-      <label for="new-buy-avg">New Avg Price:</label>
+      <label>New Avg Price:</label>
       <input type="number" id="new-buy-avg">
     </div>
 
-    <!-- Tab 2: Avg Price Target Calculator -->
+    <!-- Tab 2 -->
     <div id="tab2" class="tab-content">
       <label>Current Qty:</label>
       <input type="number" id="avg-currentQty" value="10">
@@ -76,18 +120,34 @@
       <input type="number" id="marketPrice" value="45">
 
       <label>Target Avg Price:</label>
-      <input type="number" id="targetAvg" value="43"><br>
+      <input type="number" id="targetAvg" value="43">
 
-      <button onclick="calculateAvgTarget()">Calculate Additional Qty</button>
+      <button class="calc-btn" onclick="calculateAvgTarget()">Calculate Additional Qty</button>
 
       <h3 id="avg-result"></h3>
+    </div>
+
+    <!-- Tab 3: Leverage Calculator -->
+    <div id="tab3" class="tab-content">
+      <label>Total Capital (₹):</label>
+      <input type="number" id="capital" value="420000">
+
+      <label>Amount to Buy Stocks (₹):</label>
+      <input type="number" id="stocks" value="300000">
+
+      <label>Amount to Buy LTGiltbees (₹):</label>
+      <input type="number" id="ltgiltbees" value="120000">
+
+      <button class="calc-btn" onclick="calculateLeverage()">Calculate</button>
+
+      <div class="result" id="result"></div>
     </div>
   </div>
 
   <script>
     function openTab(tabId) {
-      const contents = document.querySelectorAll(".tab-content");
-      contents.forEach(tab => tab.classList.remove("active"));
+      const tabs = document.querySelectorAll(".tab-content");
+      tabs.forEach(tab => tab.classList.remove("active"));
       document.getElementById(tabId).classList.add("active");
     }
 
@@ -116,24 +176,40 @@
     }
 
     function calculateAvgTarget() {
-  const currentQty = parseFloat(document.getElementById("avg-currentQty").value);
-  const avgSellPrice = parseFloat(document.getElementById("avgPrice").value);
-  const marketPrice = parseFloat(document.getElementById("marketPrice").value);
-  const targetAvg = parseFloat(document.getElementById("targetAvg").value);
+      const currentQty = parseFloat(document.getElementById("avg-currentQty").value);
+      const avgSellPrice = parseFloat(document.getElementById("avgPrice").value);
+      const marketPrice = parseFloat(document.getElementById("marketPrice").value);
+      const targetAvg = parseFloat(document.getElementById("targetAvg").value);
 
-  const numerator = (targetAvg * currentQty - avgSellPrice * currentQty);
-  const denominator = (marketPrice - targetAvg);
-  const x = numerator / denominator;
+      const numerator = (targetAvg * currentQty - avgSellPrice * currentQty);
+      const denominator = (marketPrice - targetAvg);
+      const x = numerator / denominator;
 
-  if (x <= 0 || isNaN(x)) {
-    document.getElementById("avg-result").innerText =
-      "Target average not achievable with current market price.";
-  } else {
-    document.getElementById("avg-result").innerText =
-      `Buy approximately ${x.toFixed(2)} quantity at ₹${marketPrice} to bring average sell price to ₹${targetAvg}.`;
-  }
-}
+      const result = document.getElementById("avg-result");
+      if (x <= 0 || isNaN(x)) {
+        result.innerText = "Target average not achievable with current market price.";
+      } else {
+        result.innerText = `Buy approximately ${x.toFixed(2)} quantity at ₹${marketPrice} to bring average sell price to ₹${targetAvg}.`;
+      }
+    }
 
+    function calculateLeverage() {
+      const capital = parseFloat(document.getElementById('capital').value);
+      const stocks = parseFloat(document.getElementById('stocks').value);
+      const ltgiltbees = parseFloat(document.getElementById('ltgiltbees').value);
+
+      const leverageFromStocks = stocks * 0.8;
+      const leverageFromLTGiltbees = ltgiltbees * 0.9;
+      const totalLeverage = leverageFromStocks + leverageFromLTGiltbees;
+      const deployedCapital = capital + totalLeverage;
+      const leveragePercent = ((totalLeverage / capital) * 100).toFixed(2);
+
+      document.getElementById('result').innerHTML = `
+        <p><strong>Total Leverage Available:</strong> ₹${totalLeverage.toLocaleString()}</p>
+        <p><strong>Leverage as % of Total Capital:</strong> ${leveragePercent}%</p>
+        <p><strong>Total Deployed Capital:</strong> ₹${deployedCapital.toLocaleString()}</p>
+      `;
+    }
   </script>
 </body>
 </html>
